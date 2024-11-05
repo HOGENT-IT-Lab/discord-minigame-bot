@@ -1,1 +1,1 @@
-# silly-nerd-bot
+# discord minigame bot
