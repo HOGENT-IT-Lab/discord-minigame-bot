@@ -42,7 +42,7 @@ class TicTacToe(commands.Cog, name="tictactoe"):
         
         # Create a new game
         new_game = GameSession(str(uuid4()), self)
-        new_game.players = [interaction.user, tegenspeler]
+        new_game.players = [interaction.user.id, tegenspeler.id]
     
         game_embed = new_game.get_updated_embed()
 
@@ -68,7 +68,7 @@ class ButtonGridView(View):
         # wrong user pressed the button
         if not self.game.play_move(int(row), int(col), interaction.user):
             # other players turn
-            if interaction.user in self.game.players:
+            if interaction.user.id in self.game.players:
                 return await interaction.response.send_message('Please wait until your opponent plays their move!', ephemeral=True)
             
             return await interaction.response.send_message('You are not playing this game, use /tictactoe to start your own!', ephemeral=True)
@@ -80,6 +80,8 @@ class ButtonGridView(View):
 
     def update_buttons(self):
         self.clear_items()
+
+        if self.game.ended: return
 
         # Create a 3x3 grid of buttons
         for row in range(3):
@@ -106,6 +108,7 @@ class GameSession():
         self.response = None
         self.players = None
         self.current_turn = 0
+        self.ended = None
 
         self.board = [
             [None, None, None],
@@ -114,6 +117,13 @@ class GameSession():
         ] 
 
     def get_updated_embed(self):
+
+        if self.ended:
+            return embeds.DefaultEmbed(
+                title = "TicTacToe",
+                description = self.ended
+            )
+
         brd = ''
         for row in self.board:
             emoji_row = ''
@@ -131,12 +141,41 @@ class GameSession():
         return embed
 
     def play_move(self, row, col, user):
-        if not user == self.players[self.current_turn]:
+
+        if not user.id == self.players[self.current_turn]:
             return False
         
         self.board[row][col] = 'X' if self.current_turn == 0 else 'O'
         self.current_turn = 1 if self.current_turn == 0 else 0
+
+        self.ended = self.check_victory()
         return True
+
+    
+    def check_victory(self):
+        # Check rows for victory
+        for row in self.board:
+            if row[0] is not None and all(cell == row[0] for cell in row):
+                return row[0]  # Return 'X' or 'O' as the winner
+
+        # Check columns for victory
+        for col in range(3):
+            if self.board[0][col] is not None and all(self.board[row][col] == self.board[0][col] for row in range(3)):
+                return self.board[0][col]  # Return 'X' or 'O' as the winner
+
+        # Check diagonals for victory
+        if self.board[0][0] is not None and all(self.board[i][i] == self.board[0][0] for i in range(3)):
+            return self.board[0][0]  # Return 'X' or 'O' as the winner
+        if self.board[0][2] is not None and all(self.board[i][2 - i] == self.board[0][2] for i in range(3)):
+            return self.board[0][2]  # Return 'X' or 'O' as the winner
+
+        # Check for draw (no empty cells left)
+        if all(cell is not None for row in self.board for cell in row):
+            return "Draw"
+
+        # No winner or draw
+        return None
+
 
 async def setup(bot):
     await bot.add_cog(TicTacToe(bot))
