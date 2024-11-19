@@ -10,20 +10,14 @@ import embeds
 
 from discord.ext import commands
 from discord.ui import View, Button
+from uuid import uuid4
 
 
 class TicTacToe(commands.Cog, name="tictactoe"):
     def __init__(self, bot):
         self.bot = bot
-        self.response = None
-        self.players = None
-        self.current_turn = 0
+        self.games = []
 
-        self.board = [
-            [None, None, None],
-            [None, None, None],
-            [None, None, None],
-        ] 
         self.emoji_conversion = {
             None: ":black_large_square:",
             'X': ":x:",
@@ -43,43 +37,28 @@ class TicTacToe(commands.Cog, name="tictactoe"):
             tegenspeler (discord.User): Which user
         """
 
-        self.players = [interaction.user, tegenspeler]
-        game_embed = self.get_updated_embed()
+        if tegenspeler.bot:
+            return await interaction.response.send_message('Cannot play versus a bot!')
+        
+        # Create a new game
+        new_game = GameSession(str(uuid4()), self)
+        new_game.players = [interaction.user, tegenspeler]
+    
+        game_embed = new_game.get_updated_embed()
 
         # respond to interaction
-        await interaction.response.send_message(embed=game_embed, view=ButtonGridView(self))
-        self.response = interaction.response
+        await interaction.response.send_message(embed=game_embed, view=ButtonGridView(new_game))
+        new_game.response = interaction.response
 
-    
-    def get_updated_embed(self):
-        brd = ''
-        for row in self.board:
-            emoji_row = ''
-            for symbol in row:
-                emoji_row += self.emoji_conversion[symbol]
+        self.games.append(new_game)
 
-            brd += emoji_row + '\n'
-
-
-        return embeds.DefaultEmbed(
-            title = "TicTacToe",
-            description = brd
-        )
-    
-    def play_move(self, row, col, user):
-        if not user == self.players[self.current_turn]:
-            return False
-        
-        self.board[row][col] = 'X' if self.current_turn == 0 else 'O'
-        self.current_turn = 1 if self.current_turn == 0 else 0
-        return True
 
 
 class ButtonGridView(View):
-    def __init__(self, cog):
+    def __init__(self, game):
         super().__init__()
 
-        self.cog = cog
+        self.game = game
         self.update_buttons()
 
 
@@ -87,12 +66,15 @@ class ButtonGridView(View):
         _, row, col = interaction.data['custom_id'].split("_")
 
         # wrong user pressed the button
-        if not self.cog.play_move(int(row), int(col), interaction.user):
-            # TODO check if wrong turn
-            return await interaction.response.send_message('You are not playing this game, use /tictactoe to start your own!')
+        if not self.game.play_move(int(row), int(col), interaction.user):
+            # other players turn
+            if interaction.user in self.game.players:
+                return await interaction.response.send_message('Please wait until your opponent plays their move!', ephemeral=True)
+            
+            return await interaction.response.send_message('You are not playing this game, use /tictactoe to start your own!', ephemeral=True)
 
         self.update_buttons()
-        embed = self.cog.get_updated_embed()
+        embed = self.game.get_updated_embed()
         await interaction.response.edit_message(embed=embed, view=self)
 
 
@@ -102,7 +84,7 @@ class ButtonGridView(View):
         # Create a 3x3 grid of buttons
         for row in range(3):
             for col in range(3):
-                disabled = self.cog.board[row][col] is not None
+                disabled = self.game.board[row][col] is not None
 
                 custom_id = f"button_{row}_{col}"
 
@@ -117,7 +99,44 @@ class ButtonGridView(View):
 
                 self.add_item(button)
 
+class GameSession():
+    def __init__(self, uuid, cog):
+        self.uuid = uuid
+        self.cog = cog
+        self.response = None
+        self.players = None
+        self.current_turn = 0
 
+        self.board = [
+            [None, None, None],
+            [None, None, None],
+            [None, None, None],
+        ] 
+
+    def get_updated_embed(self):
+        brd = ''
+        for row in self.board:
+            emoji_row = ''
+            for symbol in row:
+                emoji_row += self.cog.emoji_conversion[symbol]
+
+            brd += emoji_row + '\n'
+
+
+        embed = embeds.DefaultEmbed(
+            title = "TicTacToe",
+            description = brd
+        )
+
+        return embed
+
+    def play_move(self, row, col, user):
+        if not user == self.players[self.current_turn]:
+            return False
+        
+        self.board[row][col] = 'X' if self.current_turn == 0 else 'O'
+        self.current_turn = 1 if self.current_turn == 0 else 0
+        return True
 
 async def setup(bot):
     await bot.add_cog(TicTacToe(bot))
