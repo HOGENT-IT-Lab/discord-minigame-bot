@@ -19,9 +19,9 @@ class TicTacToe(commands.Cog, name="tictactoe"):
         self.games = []
 
         self.emoji_conversion = {
-            None: ":black_large_square:",
-            'X': ":x:",
-            'O': ":o:",
+            None: "<:Transparant:1303307134326280284>",
+            'X': "<:X1:1303307006924558376>",
+            'O': "<:O1:1303306880642187264>",
         }
 
     @discord.app_commands.command(
