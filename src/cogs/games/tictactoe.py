@@ -67,50 +67,12 @@ class TicTacToe(commands.Cog, name="tictactoe"):
         )
     
     def play_move(self, row, col, user):
-    # Check if it's the correct player's turn
-        if user != self.players[self.current_turn]:
-            return "NotYourTurn"
+        if not user == self.players[self.current_turn]:
+            return False
         
-        # Check if the cell is already occupied
-        if self.board[row][col] is not None:
-            return "InvalidMove"
-        
-        # Update the board with the current player's symbol
         self.board[row][col] = 'X' if self.current_turn == 0 else 'O'
-        
-        # Check for victory or draw
-        result = self.check_victory()
-        
-        # Switch turns if the game is not over
-        if result is None:
-            self.current_turn = 1 - self.current_turn  # Toggle between 0 and 1
-        
-        return result  # 'X', 'O', 'Draw', or None
-    
-    def check_victory(self):
-    # Check rows for victory
-        for row in self.board:
-            if row[0] is not None and all(cell == row[0] for cell in row):
-                return row[0]  # Return 'X' or 'O' as the winner
-
-    # Check columns for victory
-        for col in range(3):
-            if self.board[0][col] is not None and all(self.board[row][col] == self.board[0][col] for row in range(3)):
-                return self.board[0][col]  # Return 'X' or 'O' as the winner
-
-    # Check diagonals for victory
-        if self.board[0][0] is not None and all(self.board[i][i] == self.board[0][0] for i in range(3)):
-            return self.board[0][0]  # Return 'X' or 'O' as the winner
-        if self.board[0][2] is not None and all(self.board[i][2 - i] == self.board[0][2] for i in range(3)):
-            return self.board[0][2]  # Return 'X' or 'O' as the winner
-
-    # Check for draw (no empty cells left)
-        if all(cell is not None for row in self.board for cell in row):
-            return "Draw"
-
-    # No winner or draw
-        return None
-
+        self.current_turn = 1 if self.current_turn == 0 else 0
+        return True
 
 
 class ButtonGridView(View):
@@ -154,8 +116,6 @@ class ButtonGridView(View):
                 button.callback = self.button_callback
 
                 self.add_item(button)
-    
-
 
 
 
