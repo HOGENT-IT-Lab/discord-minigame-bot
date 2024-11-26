@@ -93,7 +93,7 @@ class RPSView(View):
             ),
             color=discord.Color.green(),
         )
-        await interaction.response.edit_message(embed=embed, view=self)
+        await interaction.response.edit_message(embed=embed, view=PlayAgainView(self.player1, self.player2))
 
     def get_winner(self, p1, p2):
         """Determines the winner based on the game rules."""
@@ -109,6 +109,29 @@ class RPSView(View):
     def get_emoji(self, choice):
         """Returns the emoji for a given choice."""
         return {"rock": "🪨", "paper": "📜", "scissors": "✂️"}.get(choice, "❓")
+
+class PlayAgainView(View):
+    def __init__(self, player1, player2):
+        super().__init__()
+        self.player1 = player1
+        self.player2 = player2
+        button = Button(label="Play Again", style=discord.ButtonStyle.success, custom_id="play_again", emoji="🔄")
+        button.callback = self.play_again
+        self.add_item(button)
+
+    async def play_again(self, interaction: discord.Interaction):
+        if interaction.user not in [self.player1, self.player2]:
+            return await interaction.response.send_message(
+                "You're not a participant in this game!", ephemeral=True
+            )
+        # Restart the game
+        embed = discord.Embed(
+            title="Rock-Paper-Scissors",
+            description=f"{self.player1.mention} challenges {self.player2.mention} to another round of Rock-Paper-Scissors!",
+            color=discord.Color.blurple(),
+        )
+        embed.set_footer(text="Click your choice below to play!")
+        await interaction.message.edit(embed=embed, view=RPSView(self.player1, self.player2))
 
 async def setup(bot):
     await bot.add_cog(RockPaperScissors(bot))
