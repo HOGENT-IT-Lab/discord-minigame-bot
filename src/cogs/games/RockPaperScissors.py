@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from discord.ui import View, Button
-from random import choice
+from embeds import DefaultEmbed
 
 class RockPaperScissors(commands.Cog, name="steenpapierschaar"):
     def __init__(self, bot):
@@ -24,10 +24,9 @@ class RockPaperScissors(commands.Cog, name="steenpapierschaar"):
             return await interaction.response.send_message('Je kan niet tegen een bot spelen!')
 
         # Create the game embed
-        embed = discord.Embed(
+        embed = DefaultEmbed(
             title="Blad-Steen-Schaar",
             description=f"{interaction.user.mention} daagt {tegenspeler.mention} uit voor een potje Blad-Steen-Schaar!",
-            color=discord.Color.blurple(),
         )
         embed.set_footer(text="Klik hieronder op jouw keuze om te spelen!")
 
@@ -85,13 +84,12 @@ class RPSView(View):
             result = f"{self.player2.mention} wint! 🎉"
 
         # Send the results
-        embed = discord.Embed(
+        embed = DefaultEmbed(
             title="Blad-Steen-Schaar Resultaten",
             description=(
                 f"{self.player1.mention} heeft {self.get_emoji(p1_choice)} gekozen\n"
                 f"{self.player2.mention} heeft {self.get_emoji(p2_choice)} gekozen\n\n{result}"
             ),
-            color=discord.Color.green(),
         )
         await interaction.response.edit_message(embed=embed, view=PlayAgainView(self.player1, self.player2))
 
@@ -125,10 +123,9 @@ class PlayAgainView(View):
                 "Je speelt niet mee in dit spel!", ephemeral=True
             )
         # Restart the game
-        embed = discord.Embed(
+        embed = DefaultEmbed(
             title="Blad-Steen-Schaar",
             description=f"{self.player1.mention} daagt {self.player2.mention} uit tot een nieuw spel Blad-Steen-Schaar!",
-            color=discord.Color.blurple(),
         )
         embed.set_footer(text="Klik hieronder op jouw keuze om te spelen!")
         await interaction.message.edit(embed=embed, view=RPSView(self.player1, self.player2))

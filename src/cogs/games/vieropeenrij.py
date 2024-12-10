@@ -10,6 +10,7 @@ import discord
 from discord.ext import commands
 from discord.ui import View, Button
 from uuid import uuid4
+from embeds import DefaultEmbed
 
 class ConnectFour(commands.Cog, name="connectfour"):
     def __init__(self, bot):
@@ -93,7 +94,7 @@ class GameSession():
 
     def get_updated_embed(self):
         if self.ended:
-            return discord.Embed(
+            return DefaultEmbed(
                 title="Connect Four",
                 description=self.ended
             )
@@ -102,7 +103,7 @@ class GameSession():
         for row in self.board:
             brd += ''.join(self.cog.emoji_conversion[cell] for cell in row) + '\n'
 
-        embed = discord.Embed(
+        embed = DefaultEmbed(
             title="Vier op een rij",
             description=brd
         )

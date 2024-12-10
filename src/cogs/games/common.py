@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from embeds import DefaultEmbed
 
 class Common(commands.Cog, name="common"):
     def __init__(self, bot):
@@ -16,10 +17,9 @@ class Common(commands.Cog, name="common"):
             if command.extras.get('list_in_games', True):
                 commands.append(f"</{command.name}:{command.id}> - {command.description}")
 
-        embed = discord.Embed(
+        embed = DefaultEmbed(
             title="🎮 Beschikbare Games",
             description='\n'.join(commands),
-            color=discord.Color.blurple(),
         )
 
         await interaction.response.send_message(embed=embed)
