@@ -23,15 +23,15 @@ class ConnectFour(commands.Cog, name="connectfour"):
         }
 
     @discord.app_commands.command(
-        name="connectfour",
-        description="Play Connect Four",
+        name="vier-op-een-rij",
+        description="Speel Vier op een rij",
     )
     @discord.app_commands.describe(tegenspeler="Tegen wie wil je spelen")
     async def connectfour(self, interaction, tegenspeler: discord.Member) -> None:
         """Start a Connect Four game."""
 
         if tegenspeler.bot:
-            return await interaction.response.send_message('Cannot play versus a bot!')
+            return await interaction.response.send_message('Je kan niet tegen een bot spelen!')
         
         # Create a new game
         new_game = GameSession(str(uuid4()), self)
@@ -55,9 +55,9 @@ class ColumnView(View):
 
         if not self.game.play_move(int(col), interaction.user):
             if interaction.user.id in self.game.players:
-                return await interaction.response.send_message('Please wait for your turn!', ephemeral=True)
+                return await interaction.response.send_message('Wacht alstublieft op uw beurt!', ephemeral=True)
             
-            return await interaction.response.send_message('You are not part of this game. Start your own with /connectfour!', ephemeral=True)
+            return await interaction.response.send_message('Jij maakt geen deel uit van dit spel. Begin uw eigen met /vier-op-een-rij!', ephemeral=True)
 
         self.update_buttons()
         embed = self.game.get_updated_embed()
@@ -103,7 +103,7 @@ class GameSession():
             brd += ''.join(self.cog.emoji_conversion[cell] for cell in row) + '\n'
 
         embed = discord.Embed(
-            title="Connect Four",
+            title="Vier op een rij",
             description=brd
         )
         return embed
@@ -136,13 +136,13 @@ class GameSession():
         # Check rows
         for row in self.board:
             if winner := check_line(row):
-                return f"{winner} wins!"
+                return f"{winner} wint!"
 
         # Check columns
         for col in range(7):
             column = [self.board[row][col] for row in range(6)]
             if winner := check_line(column):
-                return f"{winner} wins!"
+                return f"{winner} wint!"
 
         # Check diagonals
         for row in range(3):
@@ -150,11 +150,11 @@ class GameSession():
                 diagonal_down = [self.board[row + i][col + i] for i in range(4)]
                 diagonal_up = [self.board[row + 3 - i][col + i] for i in range(4)]
                 if winner := check_line(diagonal_down) or check_line(diagonal_up):
-                    return f"{winner} wins!"
+                    return f"{winner} wint!"
 
         # Check draw
         if all(cell is not None for row in self.board for cell in row):
-            return "It's a draw!"
+            return "Gelijkspel!"
 
         return None
 

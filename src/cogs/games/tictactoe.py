@@ -25,8 +25,8 @@ class TicTacToe(commands.Cog, name="tictactoe"):
         }
 
     @discord.app_commands.command(
-        name="tictactoe",
-        description="Play the tictactoe game",
+        name="boter-kaas-eieren",
+        description="Speel Boter-Kaas-Eieren",
     )
     @discord.app_commands.describe(tegenspeler="Tegen wie wil je spelen")
     async def tictactoe(self, interaction, tegenspeler: discord.Member) -> None:
@@ -38,7 +38,7 @@ class TicTacToe(commands.Cog, name="tictactoe"):
         """
 
         if tegenspeler.bot:
-            return await interaction.response.send_message('Cannot play versus a bot!')
+            return await interaction.response.send_message('Je kan niet tegen een bot spelen!')
         
         # Create a new game
         new_game = GameSession(str(uuid4()), self)
@@ -69,9 +69,9 @@ class ButtonGridView(View):
         if not self.game.play_move(int(row), int(col), interaction.user):
             # other players turn
             if interaction.user.id in self.game.players:
-                return await interaction.response.send_message('Please wait until your opponent plays their move!', ephemeral=True)
+                return await interaction.response.send_message('Wacht tot uw tegenstander zijn zet speelt!', ephemeral=True)
             
-            return await interaction.response.send_message('You are not playing this game, use /tictactoe to start your own!', ephemeral=True)
+            return await interaction.response.send_message('Je speelt dit spel niet, gebruik /boter-kaas-eieren om je eigen spel te starten!', ephemeral=True)
 
         self.update_buttons()
         embed = self.game.get_updated_embed()
@@ -120,7 +120,7 @@ class GameSession():
 
         if self.ended:
             return embeds.DefaultEmbed(
-                title = "TicTacToe",
+                title = "Boter-Kaas-Eieren",
                 description = self.ended
             )
 
@@ -134,7 +134,7 @@ class GameSession():
 
 
         embed = embeds.DefaultEmbed(
-            title = "TicTacToe",
+            title = "Boter-Kaas-Eieren",
             description = brd
         )
 

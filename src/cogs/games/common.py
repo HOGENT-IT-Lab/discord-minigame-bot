@@ -7,7 +7,7 @@ class Common(commands.Cog, name="common"):
 
     @discord.app_commands.command(
         name="games",
-        description="List all the available games",
+        description="Lijst van alle beschikbare games",
         extras={'list_in_games': False} # toont dat deze command geen game is
     )
     async def games(self, interaction: discord.Interaction):
@@ -17,7 +17,7 @@ class Common(commands.Cog, name="common"):
                 commands.append(f"</{command.name}:{command.id}> - {command.description}")
 
         embed = discord.Embed(
-            title="🎮 Available Games",
+            title="🎮 Beschikbare Games",
             description='\n'.join(commands),
             color=discord.Color.blurple(),
         )
